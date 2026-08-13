@@ -18,7 +18,8 @@ export default function AdminLayout() {
       <header className="bg-white shadow-sm border-b border-primary-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
+            <div className="flex items-center space-x-3">
+              <img src="/samca_logo.jpeg" className="w-9 h-9 rounded-full object-cover shadow-sm border border-primary-200" alt="SAMCA Logo" />
               <h1 className="text-xl font-semibold text-text-primary">Admin Panel</h1>
             </div>
             <div className="flex items-center space-x-4">

@@ -75,9 +75,9 @@ function App() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               
-              <Link to="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8  rounded-full flex items-center justify-center">
-                  <img src={logo} className=" rounded-full" alt="logo" />
+              <Link to="/" className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden border border-primary-200 shadow-sm">
+                  <img src="/samca_logo.jpeg" className="w-full h-full object-cover" alt="SAMCA Logo" />
                 </div>
                 <span className="font-bold text-xl text-text-primary">SAMCA Election</span>
               </Link>
@@ -210,9 +210,9 @@ function App() {
         <footer className="bg-primary-800 text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="flex items-center space-x-2 mb-4 md:mb-0">
-                <div className="w-8 h-8  rounded-full flex items-center justify-center">
-                  <img src={logo} className=" rounded-full" alt="logo" />
+              <div className="flex items-center space-x-3 mb-4 md:mb-0">
+                <div className="w-9 h-9 rounded-full flex items-center justify-center overflow-hidden border border-white/30 shadow-sm">
+                  <img src="/samca_logo.jpeg" className="w-full h-full object-cover" alt="SAMCA Logo" />
                 </div>
                 <span className="font-semibold">SAMCA Election Portal</span>
               </div>
