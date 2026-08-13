@@ -134,12 +134,12 @@ export default function AdminPositions() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-text-primary">Positions Management</h2>
-          <p className="text-sm text-text-secondary">
+          <h2 className="text-lg font-semibold text-gray-900 mb-1">Positions Management</h2>
+          <p className="text-sm text-gray-600">
             Configure election candidate positions and display ordering rank.
           </p>
         </div>
@@ -148,7 +148,7 @@ export default function AdminPositions() {
             setIsAdding(!isAdding);
             if (!isAdding) setForm({ name: "", displayName: "", order: positions.length + 1 });
           }}
-          className="btn-primary inline-flex items-center px-4 py-2 text-sm font-medium">
+          className="btn-primary inline-flex items-center text-sm font-medium">
           {isAdding ? "Cancel" : "+ Add New Position"}
         </button>
       </div>
@@ -156,7 +156,7 @@ export default function AdminPositions() {
       {/* Message Banner */}
       {message && (
         <div
-          className={`p-4 rounded-lg text-sm font-medium border ${
+          className={`mb-6 p-4 rounded-md text-sm font-medium border ${
             message.toLowerCase().includes("success")
               ? "bg-accent-50 text-accent-800 border-accent-200"
               : "bg-red-50 text-red-800 border-red-200"
@@ -165,13 +165,13 @@ export default function AdminPositions() {
         </div>
       )}
 
-      {/* Add Position Form */}
+      {/* Add Position Form Card */}
       {isAdding && (
-        <div className="bg-primary-50 p-6 rounded-xl border border-primary-100 shadow-sm transition-all duration-200">
-          <h3 className="text-lg font-semibold text-text-primary mb-4">Add New Position</h3>
+        <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 shadow-sm mb-6 transition-all duration-200">
+          <h3 className="text-md font-semibold text-gray-900 mb-4">Add New Position</h3>
           <form onSubmit={handleAddSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-text-primary uppercase mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Display Name
               </label>
               <input
@@ -191,7 +191,7 @@ export default function AdminPositions() {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-text-primary uppercase mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Internal Identifier (Name)
               </label>
               <input
@@ -204,7 +204,7 @@ export default function AdminPositions() {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-text-primary uppercase mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Order Rank
               </label>
               <input
@@ -220,10 +220,10 @@ export default function AdminPositions() {
               <button
                 type="button"
                 onClick={() => setIsAdding(false)}
-                className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50">
+                className="btn-secondary text-sm">
                 Cancel
               </button>
-              <button type="submit" className="btn-primary px-6 py-2 text-sm">
+              <button type="submit" className="btn-primary text-sm">
                 Save Position
               </button>
             </div>
@@ -232,19 +232,22 @@ export default function AdminPositions() {
       )}
 
       {/* Positions Table */}
-      <div className="bg-white shadow overflow-hidden rounded-xl border border-primary-100">
+      <div className="bg-white shadow overflow-hidden sm:rounded-md border border-gray-200">
         {loading ? (
           <div className="text-center py-12">
             <svg className="animate-spin h-8 w-8 text-primary-800 mx-auto" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <p className="mt-2 text-sm text-text-secondary">Loading positions...</p>
+            <p className="mt-2 text-sm text-gray-500">Loading positions...</p>
           </div>
         ) : positions.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500 font-medium">No positions configured yet.</p>
-            <p className="text-xs text-gray-400 mt-1">Click "+ Add New Position" to create your first election position.</p>
+            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <h3 className="mt-2 text-sm font-medium text-gray-900">No positions configured yet</h3>
+            <p className="mt-1 text-sm text-gray-500">Click "+ Add New Position" to create your first election position.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -252,7 +255,7 @@ export default function AdminPositions() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Order
+                    Order Rank
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Display Name
@@ -274,7 +277,7 @@ export default function AdminPositions() {
 
                   if (isEditing) {
                     return (
-                      <tr key={pos._id} className="bg-primary-50/50">
+                      <tr key={pos._id} className="bg-accent-50/40">
                         <td className="px-6 py-4">
                           <input
                             type="number"
@@ -314,12 +317,12 @@ export default function AdminPositions() {
                         <td className="px-6 py-4 text-right space-x-2">
                           <button
                             onClick={(e) => handleEditSubmit(e, pos._id)}
-                            className="bg-green-600 text-white px-3 py-1.5 rounded-md text-xs font-medium hover:bg-green-700">
+                            className="btn-primary text-xs py-1 px-3">
                             Save
                           </button>
                           <button
                             onClick={() => setEditingId(null)}
-                            className="bg-gray-300 text-gray-700 px-3 py-1.5 rounded-md text-xs font-medium hover:bg-gray-400">
+                            className="btn-secondary text-xs py-1 px-3">
                             Cancel
                           </button>
                         </td>
@@ -329,34 +332,36 @@ export default function AdminPositions() {
 
                   return (
                     <tr key={pos._id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-primary-800">
-                        #{pos.order}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-200">
+                          #{pos.order}
+                        </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-text-primary">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {pos.displayName}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary font-mono">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
                         {pos.name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
                             pos.isActive !== false
-                              ? "bg-accent-100 text-accent-800"
-                              : "bg-red-100 text-red-800"
+                              ? "bg-accent-50 text-accent-800 border-accent-200"
+                              : "bg-red-50 text-red-800 border-red-200"
                           }`}>
                           {pos.isActive !== false ? "Active" : "Inactive"}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                         <button
                           onClick={() => handleStartEdit(pos)}
-                          className="text-primary-600 hover:text-primary-900 font-medium">
+                          className="px-3 py-1 text-xs font-medium rounded-md bg-accent-50 text-accent-700 hover:bg-accent-100 border border-accent-200 transition-colors">
                           Edit
                         </button>
                         <button
                           onClick={() => handleDelete(pos._id, pos.displayName)}
-                          className="text-red-600 hover:text-red-900 font-medium">
+                          className="px-3 py-1 text-xs font-medium rounded-md bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 transition-colors">
                           Delete
                         </button>
                       </td>
