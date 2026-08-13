@@ -1,0 +1,19 @@
+# Environment variable files
+.env
+.env.*
+!.env.example
+*.env
+
+# Subdirectory environment files
+Backend/.env
+Backend/.env.*
+Frontend/.env
+Frontend/.env.*
+
+# Dependencies
+node_modules/
+
+# Build and log files
+dist/
+build/
+*.log

@@ -37,17 +37,12 @@ export default function Login({ onLogin }) {
     fetchVotingStatus();
   }, []);
 
-  // Allowed pattern: nu25mca<number> or nnm25mca<number> where number = 1..180 (leading zeros allowed) @nmamit.in
-  // Special exception: nnm24mc014@nmamit.in (demo user)
-  // Special exception: list of demo users
-  const EXCEPTION_EMAILS = ["nnm24mc014@nmamit.in","nnm24mc015@nmamit.in","nnm24mc077@nmamit.in",
-    "nnm24mc101@nmamit.in","nnm24mc134@nmamit.in","nnm24mc146@nmamit.in","nnm24mc122@nmamit.in","nnm24mc104@nmamit.in","nnm24mc118@nmamit.in"];
-  const emailRegex = /^(?:nu25mca|nnm25mca)0*(?:1?[0-9]?[0-9]|1[0-8][0-9]|190)@nmamit\.in$/i; // covers 1-190
+  // Allowed pattern: any email prefix ending with @nmamit.in
+  const emailRegex = /^[^\s@]+@nmamit\.in$/i;
 
   const validateEmail = (val) => {
-  if (!val) return true; // don't show error on empty
-  if (EXCEPTION_EMAILS.includes(val.trim().toLowerCase())) return true;
-  return emailRegex.test(val.trim().toLowerCase());
+    if (!val) return true; // don't show error on empty
+    return emailRegex.test(val.trim().toLowerCase());
   };
 
   const handleRequestOtp = async (e) => {
@@ -156,15 +151,18 @@ export default function Login({ onLogin }) {
               <label className="block text-sm font-medium text-text-primary mb-2">College Email</label>
               <input
                 type="email"
-                placeholder="nu25mca***@nmamit.in"
+                placeholder="yourname@nmamit.in"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setEmailValid(true);
+                }}
                 className="input-field"
                 required
               />
               {!emailValid && (
                 <p className="mt-1 text-xs font-medium text-red-600">
-                  Enter a valid college email (nu25mca***@nmamit.in [1-180]).
+                  Enter a valid college email ending with @nmamit.in
                 </p>
               )}
             </div>

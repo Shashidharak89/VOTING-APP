@@ -17,6 +17,12 @@ exports.requestOTP = async (req, res) => {
     return res.status(400).json({ message: "Email required" });
   }
 
+  const normalizedEmail = email.trim().toLowerCase();
+  if (!/^[^\s@]+@nmamit\.in$/i.test(normalizedEmail)) {
+    console.log("[auth][requestOTP] 400 invalid email domain", { email });
+    return res.status(400).json({ message: "Email must end with @nmamit.in" });
+  }
+
   // Check votingEnabled flag
   const settings = await Settings.getSettings();
   if (!settings.votingEnabled) {
