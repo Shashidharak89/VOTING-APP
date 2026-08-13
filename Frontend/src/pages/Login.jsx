@@ -141,6 +141,9 @@ export default function Login({ onLogin }) {
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md border border-primary-100">
         <div className="text-center mb-8">
+          <div className="flex justify-center mb-3">
+            <img src="/samca_logo.jpeg" className="w-16 h-16 rounded-full object-cover shadow-md border-2 border-primary-200" alt="SAMCA Logo" />
+          </div>
           <h2 className="text-3xl font-bold text-text-primary mb-2">SAMCA Election</h2>
           <p className="text-text-secondary">Login to cast your vote</p>
         </div>

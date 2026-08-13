@@ -89,6 +89,9 @@ export default function CandidateRegister() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center p-6">
       <div className="bg-white/95 backdrop-blur rounded-2xl shadow-2xl p-8 w-full max-w-xl border border-primary-100">
+        <div className="flex justify-center mb-3">
+          <img src="/samca_logo.jpeg" className="w-16 h-16 rounded-full object-cover shadow-md border-2 border-primary-200" alt="SAMCA Logo" />
+        </div>
         <h2 className="text-3xl font-bold mb-2 text-center bg-clip-text text-transparent bg-gradient-to-r from-primary-800 to-accent-600">
           Candidate Registration
         </h2>
