@@ -6,6 +6,7 @@ export default function AdminLayout() {
 
   const navItems = [
     { path: "/samca2k25-admin", label: "Settings", exact: true },
+    { path: "/samca2k25-admin/positions", label: "Positions" },
     { path: "/samca2k25-admin/registrations", label: "Registrations" },
     { path: "/samca2k25-admin/analytics", label: "Analytics" },
     { path: "/samca2k25-admin/voted-users", label: "Voted Users" },

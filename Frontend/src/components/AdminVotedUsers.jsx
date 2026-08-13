@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { adminFetch } from "../utils/adminApi";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api";
 const ADMIN_API = `${API_BASE}/admin`;
@@ -26,7 +27,7 @@ export default function AdminVotedUsers() {
         if (opts.search !== undefined ? opts.search : search) {
           params.set("search", opts.search !== undefined ? opts.search : search);
         }
-        const res = await fetch(`${ADMIN_API}/voted-users?${params.toString()}`);
+        const res = await adminFetch(`${ADMIN_API}/voted-users?${params.toString()}`);
         const data = await res.json();
         if (res.ok) {
           setUsers(data.users || []);

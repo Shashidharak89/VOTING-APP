@@ -1,19 +1,42 @@
 import React, { useState } from 'react';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
+
 export default function AdminLogin({ onAdminLogin }) {
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
-  const adminPassEnv = import.meta.env.VITE_ADMIN_PASS;
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
     if (!password) return setMessage('Password required');
-    if (password === adminPassEnv) {
-      setMessage('Authenticated. Redirecting...');
-      onAdminLogin();
-    } else {
-      setMessage('Invalid admin password');
+    
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/admin/verify-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${password.trim()}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setMessage('Authenticated. Redirecting...');
+        localStorage.setItem('adminPassword', password.trim());
+        localStorage.setItem('adminAuthed', 'true');
+        onAdminLogin(password.trim());
+      } else {
+        setMessage(data.message || 'Invalid admin password');
+      }
+    } catch (err) {
+      console.error('[AdminLogin] Verification error:', err);
+      setMessage('Server error connecting to backend');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -35,9 +58,17 @@ export default function AdminLogin({ onAdminLogin }) {
           </div>
           <button
             type="submit"
-            className="btn-primary w-full py-3"
+            disabled={loading}
+            className="btn-primary w-full py-3 flex items-center justify-center"
           >
-            Login
+            {loading ? (
+              <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : (
+              'Login'
+            )}
           </button>
         </form>
         {message && (

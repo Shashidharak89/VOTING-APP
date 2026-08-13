@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { adminFetch } from "../utils/adminApi";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api";
 const CANDIDATE_API = `${API_BASE}/candidate`;
@@ -13,7 +14,7 @@ export default function AdminRegistrations() {
   const fetchAllCandidates = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${CANDIDATE_API}/all`);
+      const res = await adminFetch(`${CANDIDATE_API}/all`);
       const data = await res.json();
       if (res.ok) {
         setCandidates(data.candidates);
@@ -36,7 +37,7 @@ export default function AdminRegistrations() {
     setMessage("");
     setActionId(id);
     try {
-      const res = await fetch(`${CANDIDATE_API}/${id}/${action}`, { method: "POST" });
+      const res = await adminFetch(`${CANDIDATE_API}/${id}/${action}`, { method: "POST" });
       const data = await res.json();
       if (res.ok) {
         setMessage(`Candidate ${action}d successfully`);
@@ -62,7 +63,7 @@ export default function AdminRegistrations() {
     setMessage("");
     setActionId(id);
     try {
-      const res = await fetch(`${CANDIDATE_API}/${id}`, { method: "DELETE" });
+      const res = await adminFetch(`${CANDIDATE_API}/${id}`, { method: "DELETE" });
       const data = await res.json();
       if (res.ok) {
         setMessage("Candidate deleted successfully");

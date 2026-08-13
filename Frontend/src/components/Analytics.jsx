@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { adminFetch } from '../utils/adminApi';
 
 const Analytics = () => {
   const [analytics, setAnalytics] = useState([]);
@@ -56,7 +57,7 @@ const Analytics = () => {
     try {
       if (!silent) setLoading(true);
       console.log('[Analytics] Fetching:', `${API_BASE}/position/analytics`);
-      const response = await fetch(`${API_BASE}/position/analytics`);
+      const response = await adminFetch(`${API_BASE}/position/analytics`);
       const data = await response.json();
       console.log('[Analytics] API response:', data);
       if (isMounted.current) {
@@ -87,7 +88,7 @@ const Analytics = () => {
         console.log('[Analytics] Using cached position details:', cached);
         // Revalidate
         try {
-          const response = await fetch(`${API_BASE}/position/analytics/${encodeURIComponent(positionName)}`);
+          const response = await adminFetch(`${API_BASE}/position/analytics/${encodeURIComponent(positionName)}`);
           const data = await response.json();
           console.log('[Analytics] Position details API response:', data);
           if (isMounted.current) {
@@ -103,7 +104,7 @@ const Analytics = () => {
       }
 
       setLoading(true);
-      const response = await fetch(`${API_BASE}/position/analytics/${encodeURIComponent(positionName)}`);
+      const response = await adminFetch(`${API_BASE}/position/analytics/${encodeURIComponent(positionName)}`);
       const data = await response.json();
       console.log('[Analytics] Position details API response:', data);
       if (isMounted.current) {

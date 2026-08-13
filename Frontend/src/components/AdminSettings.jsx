@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { adminFetch } from '../utils/adminApi';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 const ADMIN_API = `${API_BASE}/admin`;
@@ -15,7 +16,7 @@ export default function AdminSettings() {
 
   const fetchVotingWindow = async () => {
     try {
-      const res = await fetch(`${ADMIN_API}/get-voting-window`);
+      const res = await adminFetch(`${ADMIN_API}/get-voting-window`);
       if (res.ok) {
         const data = await res.json();
         setVotingWindow({ 
@@ -32,7 +33,7 @@ export default function AdminSettings() {
     setSavingToggle(true);
     setMessage('');
     try {
-      const res = await fetch(`${ADMIN_API}/set-voting-enabled`, {
+      const res = await adminFetch(`${ADMIN_API}/set-voting-enabled`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ enabled: !votingEnabled })
@@ -53,7 +54,7 @@ export default function AdminSettings() {
 
   const fetchRegistrationDueDate = async () => {
     try {
-  const res = await fetch(`${ADMIN_API}/get-due-date`);
+      const res = await adminFetch(`${ADMIN_API}/get-due-date`);
       if (res.ok) {
         const data = await res.json();
         setRegistrationDueDate(data.dueDate ? data.dueDate.slice(0,16) : '');
@@ -78,7 +79,7 @@ export default function AdminSettings() {
     setMessage('');
     
     try {
-      const res = await fetch(`${ADMIN_API}/set-due-date`, {
+      const res = await adminFetch(`${ADMIN_API}/set-due-date`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dueDate: registrationDueDate })
@@ -108,7 +109,7 @@ export default function AdminSettings() {
         end: votingWindow.end || undefined 
       };
       
-      const res = await fetch(`${ADMIN_API}/set-voting-window`, {
+      const res = await adminFetch(`${ADMIN_API}/set-voting-window`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
