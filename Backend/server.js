@@ -5,47 +5,44 @@ require("dotenv").config();
 
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors");
 
 const app = express();
 
+// ============================================================
+// BASIC MIDDLEWARE
+// ============================================================
+
+// File uploads
 app.use(fileUpload);
 
-// CORS
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "Accept",
-      "Origin",
-      "X-Requested-With",
-    ],
-    exposedHeaders: ["Content-Length"],
-    credentials: false,
-    optionsSuccessStatus: 204,
-  })
-);
-
+// Parse JSON request bodies
 app.use(express.json());
+
+// ============================================================
+// ROUTES
+// ============================================================
 
 const authRoutes = require("./routes/auth");
 const voteRoutes = require("./routes/vote");
+
 const adminModule = require("./routes/admin");
 const adminRoutes = adminModule.router || adminModule;
+
 const candidateRoutes = require("./routes/candidate");
 const positionRoutes = require("./routes/position");
 
-// MongoDB configuration
+// ============================================================
+// MONGODB CONFIGURATION
+// ============================================================
+
 const mongoUri = process.env.MONGO_URI;
 
 const mongoPoolSize = process.env.MONGO_POOL_SIZE
   ? Number(process.env.MONGO_POOL_SIZE)
   : 10;
 
-// Reusable MongoDB connection promise
+// Cached connection promise.
+// This allows warm Lambda invocations to reuse an existing connection.
 let mongoConnectionPromise = null;
 
 async function connectToDatabase() {
@@ -58,110 +55,215 @@ async function connectToDatabase() {
     return;
   }
 
-  // Connection already in progress
+  // Connection is already being established
   if (mongoConnectionPromise) {
     await mongoConnectionPromise;
     return;
   }
 
+  console.log("[mongoose] Connecting to MongoDB...");
+
   mongoConnectionPromise = mongoose
     .connect(mongoUri, {
       maxPoolSize: mongoPoolSize,
+
+      // Don't wait too long if MongoDB cannot be reached
       serverSelectionTimeoutMS: 10000,
+
+      // Socket timeout
       socketTimeoutMS: 45000,
     })
     .then(() => {
       console.log(
-        `[mongoose] Connected with pool size: ${mongoPoolSize}`
+        `[mongoose] Connected successfully. Pool size: ${mongoPoolSize}`
       );
     })
     .catch((err) => {
+      console.error(
+        "[mongoose] MongoDB connection failed:",
+        err.message
+      );
+
+      // Allow the next request to retry the connection
       mongoConnectionPromise = null;
-      console.error("MongoDB connection error:", err.message);
+
       throw err;
     });
 
   await mongoConnectionPromise;
 }
 
-// Middleware to ensure DB connection for DB-dependent routes
+// ============================================================
+// DATABASE MIDDLEWARE
+// ============================================================
+
 async function ensureDbConnected(req, res, next) {
   try {
     await connectToDatabase();
     next();
   } catch (err) {
-    console.error("[ensureDbConnected] Database connection error:", err.message);
-    res.status(500).json({
-      message: "Database connection error. Please verify MONGO_URI and MongoDB Atlas network access.",
-      error: err.message,
+    console.error(
+      `[ensureDbConnected] Database error for ${req.method} ${req.originalUrl}:`,
+      err.message
+    );
+
+    // Do not expose MongoDB connection details to clients
+    return res.status(500).json({
+      message:
+        "Database connection error. Please verify the MongoDB configuration and Atlas network access.",
     });
   }
 }
 
-// Basic routes (DB independent)
-app.get("/", (req, res) => {
-  res.send("Voting App API is running");
+// ============================================================
+// BASIC / HEALTH ROUTES
+// ============================================================
+
+// Root
+app.get("/", (_req, res) => {
+  res.json({
+    message: "Voting App API is running",
+  });
 });
 
-app.get("/api/health", (req, res) => {
+// Health check
+// This does NOT require MongoDB.
+app.get("/api/health", (_req, res) => {
   res.json({
     status: "ok",
     timestamp: new Date().toISOString(),
   });
 });
 
-// Static uploads
+// ============================================================
+// STATIC FILES
+// ============================================================
+
 app.use("/uploads", express.static("uploads"));
 
-// API routes
-// Non-DB routes like /api/admin/verify-password bypass DB connection checks
+// ============================================================
+// API ROUTES
+// ============================================================
+
+// Authentication routes require MongoDB
 app.use("/api/auth", ensureDbConnected, authRoutes);
+
+// Voting routes require MongoDB
 app.use("/api/vote", ensureDbConnected, voteRoutes);
+
+// ------------------------------------------------------------
+// ADMIN ROUTES
+// ------------------------------------------------------------
+//
+// IMPORTANT:
+//
+// POST /api/admin/verify-password
+// does NOT require MongoDB.
+//
+// All other admin routes require MongoDB.
+//
+// This is important for Lambda because admin password
+// verification only uses bcrypt + environment variables.
+// ------------------------------------------------------------
+
 app.use("/api/admin", (req, res, next) => {
-  if (req.path === "/verify-password") {
+  const isPasswordVerification =
+    req.method === "POST" &&
+    req.path === "/verify-password";
+
+  if (isPasswordVerification) {
     return next();
   }
+
   return ensureDbConnected(req, res, next);
 }, adminRoutes);
-app.use("/api/candidate", ensureDbConnected, candidateRoutes);
-app.use("/api/position", ensureDbConnected, positionRoutes);
 
-// Global Error Handler
+// Candidate routes require MongoDB
+app.use(
+  "/api/candidate",
+  ensureDbConnected,
+  candidateRoutes
+);
+
+// Position routes require MongoDB
+app.use(
+  "/api/position",
+  ensureDbConnected,
+  positionRoutes
+);
+
+// ============================================================
+// GLOBAL ERROR HANDLER
+// ============================================================
+
 app.use((err, req, res, _next) => {
-  console.error("[Express Global Error]:", err);
-  res.status(err.status || 500).json({
+  console.error("[Express Global Error]");
+  console.error("Method:", req.method);
+  console.error("URL:", req.originalUrl);
+  console.error("Error:", err);
+
+  if (res.headersSent) {
+    return;
+  }
+
+  return res.status(err.status || 500).json({
     message: err.message || "Internal Server Error",
   });
 });
 
-// MongoDB event listeners
+// ============================================================
+// MONGOOSE EVENTS
+// ============================================================
+
 mongoose.connection.on("error", (err) => {
-  console.error("Mongoose connection error:", err.message);
+  console.error(
+    "[mongoose] Connection error:",
+    err.message
+  );
 });
 
 mongoose.connection.on("disconnected", () => {
-  console.warn("Mongoose disconnected");
+  console.warn("[mongoose] MongoDB disconnected");
 });
 
-// Export Express app and DB connection
+// ============================================================
+// EXPORTS
+// ============================================================
+
 module.exports = {
   app,
   connectToDatabase,
   ensureDbConnected,
 };
 
-// Keep normal local development working
+// ============================================================
+// LOCAL DEVELOPMENT
+// ============================================================
+//
+// This section runs ONLY when executing:
+//
+// node server.js
+//
+// It does NOT run when Lambda imports this file.
+// ============================================================
+
 if (require.main === module) {
   const PORT = process.env.PORT || 5000;
 
   connectToDatabase()
     .then(() => {
       app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
+        console.log(
+          `Server running on http://localhost:${PORT}`
+        );
       });
     })
     .catch((err) => {
-      console.error("Failed to start server:", err);
+      console.error(
+        "[local] Failed to start server:",
+        err
+      );
+
       process.exit(1);
     });
 }
