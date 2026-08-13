@@ -114,7 +114,7 @@ export default function Vote({ userEmail, token, onVoted }) {
         <div className="bg-white rounded-xl shadow-2xl overflow-hidden border border-primary-100">
           <div className="bg-gradient-to-r from-primary-800 to-primary-700 text-white p-6">
             <h2 className="text-3xl text-white font-bold text-center">Cast Your Vote</h2>
-            <p className="text-center mt-2 opacity-90">SAMCA Election 2025</p>
+            <p className="text-center mt-2 opacity-90">SAMCA Election 2026</p>
           </div>
           
           <form onSubmit={handleSubmit} noValidate className="p-6">

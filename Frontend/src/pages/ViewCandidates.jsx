@@ -60,7 +60,7 @@ export default function ViewCandidates() {
 					<div className="bg-white rounded-xl shadow-2xl overflow-hidden border border-primary-100">
 						<div className="bg-gradient-to-r from-primary-800 to-primary-700 text-white p-6">
 							<h2 className="text-3xl text-white font-bold text-center">Candidate List</h2>
-							<p className="text-center mt-2 opacity-90">SAMCA Election 2025</p>
+							<p className="text-center mt-2 opacity-90">SAMCA Election 2026</p>
 						</div>
 						<div className="p-6 grid gap-8">
 							{sortedPositions.map((positionObj) => {

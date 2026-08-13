@@ -5,11 +5,11 @@ export default function AdminLayout() {
   const location = useLocation();
 
   const navItems = [
-    { path: "/samca2k25-admin", label: "Settings", exact: true },
-    { path: "/samca2k25-admin/positions", label: "Positions" },
-    { path: "/samca2k25-admin/registrations", label: "Registrations" },
-    { path: "/samca2k25-admin/analytics", label: "Analytics" },
-    { path: "/samca2k25-admin/voted-users", label: "Voted Users" },
+    { path: "/samca2k26-admin", label: "Settings", exact: true },
+    { path: "/samca2k26-admin/positions", label: "Positions" },
+    { path: "/samca2k26-admin/registrations", label: "Registrations" },
+    { path: "/samca2k26-admin/analytics", label: "Analytics" },
+    { path: "/samca2k26-admin/voted-users", label: "Voted Users" },
   ];
 
   return (
@@ -36,7 +36,7 @@ export default function AdminLayout() {
               {navItems.map((item) => {
                 const isActive = item.exact
                   ? location.pathname === item.path
-                  : location.pathname.startsWith(item.path) && item.path !== "/samca2k25-admin";
+                  : location.pathname.startsWith(item.path) && item.path !== "/samca2k26-admin";
 
                 return (
                   <NavLink

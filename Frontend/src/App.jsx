@@ -53,7 +53,7 @@ function App() {
     } catch {
       /* ignore storage errors */
     }
-    const from = (location.state && location.state.from) || "/samca2k25-admin";
+    const from = (location.state && location.state.from) || "/samca2k26-admin";
     navigate(from, { replace: true });
   };
   const handleAdminLogout = () => {
@@ -187,7 +187,7 @@ function App() {
           <Route path="/admin-login" element={<AdminLogin onAdminLogin={handleAdminLogin} />} />
           {/* Admin protected routes */}
           <Route
-            path="/samca2k25-admin"
+            path="/samca2k26-admin"
             element={
               isAdminAuthed ? (
                 <AdminLayout />
@@ -235,7 +235,7 @@ function Home() {
         <div className="text-center">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-text-primary mb-6">
             SAMCA Election
-            <span className="block text-accent-600">Portal 2025</span>
+            <span className="block text-accent-600">Portal 2026</span>
           </h1>
           <p className="text-xl text-text-secondary mb-8 max-w-3xl mx-auto leading-relaxed">
             Your voice matters. Register as a candidate, explore available positions, and participate in shaping your
