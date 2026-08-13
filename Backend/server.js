@@ -2,80 +2,115 @@
 const fileUpload = require("./config/expressFileUpload");
 
 require("dotenv").config();
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
 const app = express();
+
 app.use(fileUpload);
-// TEMP: Wide-open CORS (allow all origins). WARNING: Do NOT use in production.
-// Replace this with a restrictive list before deploying publicly.
+
+// CORS
 app.use(
   cors({
-    origin: "*", // reflect all origins
+    origin: "*",
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Accept",
+      "Origin",
+      "X-Requested-With",
+    ],
     exposedHeaders: ["Content-Length"],
-    credentials: false, // can't be true when origin is '*'
+    credentials: false,
     optionsSuccessStatus: 204,
   })
 );
-// Removed explicit app.options('*', cors()) because Express 5 path-to-regexp v6
-// can throw on '*' patterns; cors() middleware already handles preflight.
 
 app.use(express.json());
 
-
-const PORT = process.env.PORT || 5000;
 const authRoutes = require("./routes/auth");
 const voteRoutes = require("./routes/vote");
 const adminModule = require("./routes/admin");
 const adminRoutes = adminModule.router || adminModule;
-const { adminAuth } = adminModule;
 const candidateRoutes = require("./routes/candidate");
 const positionRoutes = require("./routes/position");
 
-app.get("/", (req, res) => res.send("Voting App API is running"));
+// Basic routes
+app.get("/", (req, res) => {
+  res.send("Voting App API is running");
+});
 
-app.get("/api/health", (req, res) => res.json({ status: "ok", timestamp: new Date().toISOString() }));
+app.get("/api/health", (req, res) => {
+  res.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+  });
+});
 
+// Static uploads
 app.use("/uploads", express.static("uploads"));
+
+// API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/vote", voteRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/candidate", candidateRoutes);
 app.use("/api/position", positionRoutes);
 
+// MongoDB configuration
 const mongoUri = process.env.MONGO_URI;
-// Increase pool size for more concurrent connections (default 10, now 50)
-const mongoPoolSize = process.env.MONGO_POOL_SIZE ? Number(process.env.MONGO_POOL_SIZE) : 50;
+
+const mongoPoolSize = process.env.MONGO_POOL_SIZE
+  ? Number(process.env.MONGO_POOL_SIZE)
+  : 10;
 
 if (!mongoUri) {
   console.error("Missing MONGO_URI environment variable");
-  process.exit(1);
 }
 
-// Helper to mask credentials when logging
-function redactMongoUri(uri) {
-  return uri.replace(/:\/\/([^:]+):([^@]+)@/, (m, u) => `://${u}:***@`);
-}
+// Reusable MongoDB connection promise
+let mongoConnectionPromise = null;
 
-// Use async/await for connection
-(async () => {
-  try {
-    await mongoose.connect(mongoUri, {
+async function connectToDatabase() {
+  if (!mongoUri) {
+    throw new Error("MONGO_URI environment variable is not set");
+  }
+
+  // Already connected
+  if (mongoose.connection.readyState === 1) {
+    return;
+  }
+
+  // Connection already in progress
+  if (mongoConnectionPromise) {
+    await mongoConnectionPromise;
+    return;
+  }
+
+  mongoConnectionPromise = mongoose
+    .connect(mongoUri, {
       maxPoolSize: mongoPoolSize,
       serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,
+    })
+    .then(() => {
+      console.log(
+        `[mongoose] Connected with pool size: ${mongoPoolSize}`
+      );
+    })
+    .catch((err) => {
+      mongoConnectionPromise = null;
+      console.error("MongoDB connection error:", err.message);
+      throw err;
     });
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-    console.log(`[mongoose] Connected with pool size: ${mongoPoolSize}`);
-  } catch (err) {
-    console.error("MongoDB connection error:", err.message);
-    process.exit(1);
-  }
-})();
 
+  await mongoConnectionPromise;
+}
+
+// MongoDB event listeners
 mongoose.connection.on("error", (err) => {
   console.error("Mongoose connection error:", err.message);
 });
@@ -84,8 +119,24 @@ mongoose.connection.on("disconnected", () => {
   console.warn("Mongoose disconnected");
 });
 
-process.on("SIGINT", async () => {
-  await mongoose.connection.close();
-  console.log("Mongoose connection closed on app termination");
-  process.exit(0);
-});
+// Export Express app and DB connection
+module.exports = {
+  app,
+  connectToDatabase,
+};
+
+// Keep normal local development working
+if (require.main === module) {
+  const PORT = process.env.PORT || 5000;
+
+  connectToDatabase()
+    .then(() => {
+      app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+      });
+    })
+    .catch((err) => {
+      console.error("Failed to start server:", err);
+      process.exit(1);
+    });
+}
