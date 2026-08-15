@@ -54,8 +54,11 @@ async function connectToDatabase() {
     throw new Error("MONGO_URI environment variable is not set");
   }
 
-  // Already connected
-  if (mongoose.connection.readyState === 1) {
+  // Already connected or currently connecting
+  if (mongoose.connection.readyState === 1 || mongoose.connection.readyState === 2) {
+    if (mongoConnectionPromise) {
+      await mongoConnectionPromise;
+    }
     return;
   }
 
@@ -70,6 +73,7 @@ async function connectToDatabase() {
   mongoConnectionPromise = mongoose
     .connect(mongoUri, {
       maxPoolSize: mongoPoolSize,
+      family: 4, // Force IPv4 to prevent IPv6 TLS handshake timeouts on Linux
 
       // Don't wait too long if MongoDB cannot be reached
       serverSelectionTimeoutMS: 10000,
@@ -227,7 +231,9 @@ mongoose.connection.on("error", (err) => {
 });
 
 mongoose.connection.on("disconnected", () => {
-  console.warn("[mongoose] MongoDB disconnected");
+  if (mongoose.connection.readyState === 0) {
+    console.warn("[mongoose] MongoDB disconnected");
+  }
 });
 
 // ============================================================
