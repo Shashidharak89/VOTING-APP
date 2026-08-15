@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
+const rawApiBase = import.meta.env.VITE_API_BASE_URL || '/api';
+const API_BASE = rawApiBase.replace(/\/$/, "");
 
 export default function AdminLogin({ onAdminLogin }) {
   const [password, setPassword] = useState('');
@@ -34,7 +35,11 @@ export default function AdminLogin({ onAdminLogin }) {
       }
     } catch (err) {
       console.error('[AdminLogin] Verification error:', err);
-      setMessage('Server error connecting to backend');
+      if (err.name === 'TypeError' || err.message?.includes('fetch')) {
+        setMessage('Unable to connect to backend server. Please verify backend is running.');
+      } else {
+        setMessage('Server error connecting to backend');
+      }
     } finally {
       setLoading(false);
     }

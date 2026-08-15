@@ -5,12 +5,16 @@ require("dotenv").config();
 
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 
 const app = express();
 
 // ============================================================
 // BASIC MIDDLEWARE
 // ============================================================
+
+// Enable CORS for all origins
+app.use(cors({ origin: "*" }));
 
 // File uploads
 app.use(fileUpload);
@@ -250,20 +254,14 @@ module.exports = {
 if (require.main === module) {
   const PORT = process.env.PORT || 5000;
 
-  connectToDatabase()
-    .then(() => {
-      app.listen(PORT, () => {
-        console.log(
-          `Server running on http://localhost:${PORT}`
-        );
-      });
-    })
-    .catch((err) => {
-      console.error(
-        "[local] Failed to start server:",
-        err
-      );
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
 
-      process.exit(1);
+    connectToDatabase().catch((err) => {
+      console.error(
+        "[local] MongoDB initial connection warning:",
+        err.message
+      );
     });
+  });
 }
