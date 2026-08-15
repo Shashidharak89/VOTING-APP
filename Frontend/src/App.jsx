@@ -98,11 +98,18 @@ function App() {
                   Vote
                 </Link>
                 {isAdminAuthed && (
-                  <button
-                    onClick={handleAdminLogout}
-                    className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors">
-                    Admin Logout
-                  </button>
+                  <>
+                    <Link
+                      to="/samca2k26-admin"
+                      className="text-primary-800 font-semibold transition-colors hover:text-accent-600">
+                      Admin Panel
+                    </Link>
+                    <button
+                      onClick={handleAdminLogout}
+                      className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors">
+                      Admin Logout
+                    </button>
+                  </>
                 )}
               </nav>
 
@@ -147,14 +154,22 @@ function App() {
                 Vote
               </Link>
               {isAdminAuthed && (
-                <button
-                  onClick={() => {
-                    handleAdminLogout();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="block w-full text-left bg-red-600 text-white px-3 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors">
-                  Admin Logout
-                </button>
+                <>
+                  <Link
+                    to="/samca2k26-admin"
+                    className="block text-primary-800 font-medium hover:text-accent-600 transition-colors py-2 px-2 rounded-lg hover:bg-primary-50"
+                    onClick={() => setIsMobileMenuOpen(false)}>
+                    Admin Panel
+                  </Link>
+                  <button
+                    onClick={() => {
+                      handleAdminLogout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-left bg-red-600 text-white px-3 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors">
+                    Admin Logout
+                  </button>
+                </>
               )}
             </nav>
           </div>

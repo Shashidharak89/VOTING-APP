@@ -13,54 +13,55 @@ export default function AdminLayout() {
   ];
 
   return (
-    <div className="min-h-screen bg-light-bg">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-primary-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+    <div className="min-h-screen bg-light-bg py-6 sm:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Admin Panel Page Heading */}
+        <div className="mb-6 pb-5 border-b border-primary-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
             <div className="flex items-center space-x-3">
-              <img src="/samca_logo.jpeg" className="w-9 h-9 rounded-full object-cover shadow-sm border border-primary-200" alt="SAMCA Logo" />
-              <h1 className="text-xl font-semibold text-text-primary">Admin Panel</h1>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-primary-800 tracking-tight">
+                Admin Panel
+              </h1>
+              <span className="bg-primary-100 text-primary-800 text-xs font-semibold px-3 py-1 rounded-full border border-primary-200 shadow-xs">
+                Control Center
+              </span>
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-text-secondary">SAMCA Election Portal</span>
-            </div>
+            <p className="text-sm text-text-secondary mt-1">
+              Manage election settings, candidate positions, registrations, live analytics, and voting logs.
+            </p>
           </div>
         </div>
-      </header>
 
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          {/* Navigation Tabs */}
-          <div className="border-b border-primary-200 mb-6">
-            <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-              {navItems.map((item) => {
-                const isActive = item.exact
-                  ? location.pathname === item.path
-                  : location.pathname.startsWith(item.path) && item.path !== "/samca2k26-admin";
+        {/* Navigation Tabs */}
+        <div className="border-b border-primary-200 mb-6 overflow-x-auto">
+          <nav className="-mb-px flex space-x-8 min-w-max" aria-label="Admin Navigation Tabs">
+            {navItems.map((item) => {
+              const isActive = item.exact
+                ? location.pathname === item.path
+                : location.pathname.startsWith(item.path) && item.path !== "/samca2k26-admin";
 
-                return (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
-                      isActive
-                        ? "border-primary-800 text-primary-800"
-                        : "border-transparent text-text-secondary hover:text-text-primary hover:border-primary-300"
-                    }`}>
-                    {item.label}
-                  </NavLink>
-                );
-              })}
-            </nav>
-          </div>
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={`whitespace-nowrap py-3 px-1 border-b-2 font-semibold text-sm transition-all duration-200 ${
+                    isActive
+                      ? "border-primary-800 text-primary-800"
+                      : "border-transparent text-text-secondary hover:text-primary-800 hover:border-primary-300"
+                  }`}>
+                  {item.label}
+                </NavLink>
+              );
+            })}
+          </nav>
+        </div>
 
-          {/* Content Area */}
-          <div className="bg-white rounded-lg shadow border border-primary-100">
-            <Outlet />
-          </div>
+        {/* Content Area */}
+        <div className="bg-white rounded-xl shadow-sm border border-primary-200 overflow-hidden">
+          <Outlet />
         </div>
       </div>
     </div>
   );
 }
+
