@@ -1,7 +1,7 @@
 const serverless = require("serverless-http");
 const { app } = require("./server");
 
-// Convert Express application into a Lambda handler with binary payload support
+// Convert Express application into Lambda handler
 const expressHandler = serverless(app, {
   binary: [
     "multipart/form-data",
@@ -11,8 +11,8 @@ const expressHandler = serverless(app, {
 });
 
 exports.handler = async (event, context) => {
-  // Important for MongoDB connection pooling on AWS Lambda.
-  // Allows Lambda to return response immediately without waiting for open sockets.
+  // Allow Lambda to return without waiting for
+  // MongoDB sockets/event-loop handles.
   context.callbackWaitsForEmptyEventLoop = false;
 
   try {
@@ -20,6 +20,7 @@ exports.handler = async (event, context) => {
       event?.requestContext?.http?.method ||
       event?.httpMethod ||
       "UNKNOWN";
+
     const path =
       event?.rawPath ||
       event?.path ||
@@ -27,18 +28,22 @@ exports.handler = async (event, context) => {
 
     console.log(`[Lambda] ${method} ${path}`);
 
-    const response = await expressHandler(event, context);
+    const response = await expressHandler(
+      event,
+      context
+    );
+
     return response;
   } catch (err) {
     console.error("[Lambda Handler Error]:", err);
 
+    // IMPORTANT:
+    // Do NOT add Access-Control-Allow-Origin here.
+    // AWS Lambda Function URL is handling CORS.
     return {
       statusCode: 500,
       headers: {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "*",
-        "Access-Control-Allow-Methods": "*",
       },
       body: JSON.stringify({
         message: "Internal Server Error",

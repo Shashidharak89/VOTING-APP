@@ -5,7 +5,6 @@ require("dotenv").config();
 
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors");
 
 const app = express();
 
@@ -13,8 +12,9 @@ const app = express();
 // BASIC MIDDLEWARE
 // ============================================================
 
-// Enable CORS for all origins
-app.use(cors({ origin: "*" }));
+// IMPORTANT:
+// CORS is NOT configured here.
+// AWS Lambda Function URL handles CORS.
 
 // File uploads
 app.use(fileUpload);
@@ -45,8 +45,8 @@ const mongoPoolSize = process.env.MONGO_POOL_SIZE
   ? Number(process.env.MONGO_POOL_SIZE)
   : 10;
 
-// Cached connection promise.
-// This allows warm Lambda invocations to reuse an existing connection.
+// Reusable connection promise.
+// Lambda warm invocations can reuse the MongoDB connection.
 let mongoConnectionPromise = null;
 
 async function connectToDatabase() {
@@ -54,15 +54,21 @@ async function connectToDatabase() {
     throw new Error("MONGO_URI environment variable is not set");
   }
 
-  // Already connected or currently connecting
-  if (mongoose.connection.readyState === 1 || mongoose.connection.readyState === 2) {
-    if (mongoConnectionPromise) {
-      await mongoConnectionPromise;
-    }
+  // Already connected
+  if (mongoose.connection.readyState === 1) {
     return;
   }
 
-  // Connection is already being established
+  // Connection currently being established
+  if (mongoose.connection.readyState === 2) {
+    if (mongoConnectionPromise) {
+      await mongoConnectionPromise;
+    }
+
+    return;
+  }
+
+  // Connection already in progress
   if (mongoConnectionPromise) {
     await mongoConnectionPromise;
     return;
@@ -73,9 +79,11 @@ async function connectToDatabase() {
   mongoConnectionPromise = mongoose
     .connect(mongoUri, {
       maxPoolSize: mongoPoolSize,
-      family: 4, // Force IPv4 to prevent IPv6 TLS handshake timeouts on Linux
 
-      // Don't wait too long if MongoDB cannot be reached
+      // Force IPv4
+      family: 4,
+
+      // MongoDB connection timeout
       serverSelectionTimeoutMS: 10000,
 
       // Socket timeout
@@ -92,7 +100,7 @@ async function connectToDatabase() {
         err.message
       );
 
-      // Allow the next request to retry the connection
+      // Allow the next invocation to retry
       mongoConnectionPromise = null;
 
       throw err;
@@ -115,16 +123,15 @@ async function ensureDbConnected(req, res, next) {
       err.message
     );
 
-    // Do not expose MongoDB connection details to clients
     return res.status(500).json({
       message:
-        "Database connection error. Please verify the MongoDB configuration and Atlas network access.",
+        "Database connection error. Please verify MongoDB configuration and Atlas network access.",
     });
   }
 }
 
 // ============================================================
-// BASIC / HEALTH ROUTES
+// BASIC ROUTES
 // ============================================================
 
 // Root
@@ -135,7 +142,7 @@ app.get("/", (_req, res) => {
 });
 
 // Health check
-// This does NOT require MongoDB.
+// Does NOT require MongoDB
 app.get("/api/health", (_req, res) => {
   res.json({
     status: "ok",
@@ -153,27 +160,26 @@ app.use("/uploads", express.static("uploads"));
 // API ROUTES
 // ============================================================
 
-// Authentication routes require MongoDB
-app.use("/api/auth", ensureDbConnected, authRoutes);
+// Authentication
+app.use(
+  "/api/auth",
+  ensureDbConnected,
+  authRoutes
+);
 
-// Voting routes require MongoDB
-app.use("/api/vote", ensureDbConnected, voteRoutes);
+// Voting
+app.use(
+  "/api/vote",
+  ensureDbConnected,
+  voteRoutes
+);
 
-// ------------------------------------------------------------
-// ADMIN ROUTES
-// ------------------------------------------------------------
-//
-// IMPORTANT:
+// Admin
 //
 // POST /api/admin/verify-password
 // does NOT require MongoDB.
 //
 // All other admin routes require MongoDB.
-//
-// This is important for Lambda because admin password
-// verification only uses bcrypt + environment variables.
-// ------------------------------------------------------------
-
 app.use("/api/admin", (req, res, next) => {
   const isPasswordVerification =
     req.method === "POST" &&
@@ -186,14 +192,14 @@ app.use("/api/admin", (req, res, next) => {
   return ensureDbConnected(req, res, next);
 }, adminRoutes);
 
-// Candidate routes require MongoDB
+// Candidates
 app.use(
   "/api/candidate",
   ensureDbConnected,
   candidateRoutes
 );
 
-// Position routes require MongoDB
+// Positions
 app.use(
   "/api/position",
   ensureDbConnected,
@@ -250,24 +256,25 @@ module.exports = {
 // LOCAL DEVELOPMENT
 // ============================================================
 //
-// This section runs ONLY when executing:
-//
+// Runs only when:
 // node server.js
 //
-// It does NOT run when Lambda imports this file.
+// Does NOT run when Lambda imports this file.
 // ============================================================
 
 if (require.main === module) {
   const PORT = process.env.PORT || 5000;
 
   app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(
+      `Server running on http://localhost:${PORT}`
+    );
+  });
 
-    connectToDatabase().catch((err) => {
-      console.error(
-        "[local] MongoDB initial connection warning:",
-        err.message
-      );
-    });
+  connectToDatabase().catch((err) => {
+    console.error(
+      "[local] MongoDB initial connection warning:",
+      err.message
+    );
   });
 }
